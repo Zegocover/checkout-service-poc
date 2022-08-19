@@ -4,3 +4,4 @@ uvicorn
 sqlalchemy
 pydantic
 tortoise-orm
+asyncpg
