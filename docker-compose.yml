@@ -18,6 +18,8 @@ services:
     image: postgres:12-alpine
     volumes:
       - checkout-db:/var/lib/postgresql/data
+    ports:
+      - 19027:5432
     expose:
       - 5432
     environment:
