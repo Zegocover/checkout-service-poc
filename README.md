@@ -44,3 +44,8 @@ When psql is running connect to the db with
 ```
 \c web
 ```
+
+To connect using a database app of your choice use the username and password found in docker-compose.yml and use the following url:
+```
+jdbc:postgresql://localhost:19027/web
+```
