@@ -29,10 +29,7 @@ def index():
 
 @app.post('/test-model', response_model=TestModelPydantic)
 async def create_test_model(request_body: TestModelInPydantic):
-    print(request_body)
-    print(request_body.name)
-    test_model = await TestModel.create(name=request_body.name)
-    print("test model: ")
+    test_model = await TestModel.create(**request_body.dict(exclude_unset=True))
     return await TestModelPydantic.from_tortoise_orm(test_model)
 
 
