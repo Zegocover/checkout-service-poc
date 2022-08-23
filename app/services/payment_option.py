@@ -1,7 +1,8 @@
+from tabnanny import check
 from tortoise import models, fields
 from uuid import UUID, uuid4
 
-from services.checkout_session_mock import CheckoutSession
+from services.session_models import CheckoutSession
 
 
 class StripePaymentOption:
@@ -9,7 +10,7 @@ class StripePaymentOption:
         pass
 
     @classmethod
-    def is_available(self, checkout_session) -> bool:
+    async def is_available(self, checkout_session) -> bool:
         """
         Works out whether payment option is available for that particular checkout session
         """
@@ -29,7 +30,7 @@ class StripePaymentOption:
         Does any setup required before redirecting to the payment provider
         Should take into account whether the checkout session is being used by the customer or a CS agent
         """
-        return "https://stripe.com/"
+        pass
 
     @classmethod
     def payment_session_redirect_url(self, checkout_session) -> str:
@@ -44,11 +45,13 @@ class PCLPaymentOption:
         pass
 
     @classmethod
-    def is_available(self, checkout_session) -> bool:
-        """
-        Works out whether payment option is available for that particular checkout session
-        """
-        return False
+    async def is_available(self, checkout_session) -> bool:
+        items = checkout_session.checkout_items
+        if [i for i in items if i.type == "Quote"]:
+            return True
+        else:
+            return False
+
    
     @classmethod
     def get_description(self, checkout_session) -> str:
@@ -64,7 +67,7 @@ class PCLPaymentOption:
         Does any setup required before redirecting to the payment provider
         Should take into account whether the checkout session is being used by the customer or a CS agent
         """
-        return "https://premiumcredit.com/"
+        pass
 
     @classmethod
     def payment_session_redirect_url(self, checkout_session) -> str:
@@ -74,15 +77,24 @@ class PCLPaymentOption:
         return "https://www.premiumcredit.com/"
 
 
-def get_payment_options(checkout_session: CheckoutSession):
-    is_available = dict()
-    get_description = dict()
-    payment_session_setup = dict()
-    payment_session_redirect_url = dict()
+async def get_payment_options(checkout_session: CheckoutSession):
+    available_payment_options = []
+    return_list = []
+    option_dict = dict()
 
     for payment_option in [StripePaymentOption, PCLPaymentOption]:
-        is_available[payment_option.__name__] = payment_option.is_available(checkout_session)
-        get_description[payment_option.__name__] = payment_option.get_description(checkout_session)
-        payment_session_setup[payment_option.__name__] = payment_option.payment_session_setup(checkout_session)
-        payment_session_redirect_url[payment_option.__name__] = payment_option.payment_session_redirect_url(checkout_session)
-    return (is_available, get_description, payment_session_setup, payment_session_redirect_url)
+        if await payment_option.is_available(checkout_session):
+            available_payment_options.append(payment_option)
+
+    
+    for option in available_payment_options:
+        option_dict["payment_method"] = option.__name__
+        option_dict["description"] = payment_option.get_description(checkout_session)
+        option_dict["redirect_url"] = payment_option.payment_session_redirect_url(checkout_session)
+        option_dict["success_url"] = checkout_session.success_url
+        option_dict["cancel_url"] = checkout_session.cancel_url
+        option_dict["amount"] = checkout_session.total()
+
+        return_list.append(option_dict)
+
+    return return_list
