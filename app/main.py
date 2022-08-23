@@ -1,3 +1,4 @@
+from logging import PlaceHolder
 from fastapi import FastAPI
 
 from db import init_db
@@ -20,3 +21,7 @@ async def shutdown_event():
 @app.get('/')
 def index():
     return {"data": ""}
+
+@app.get('/checkout_items/{item_id}')
+def payment_options(item_id: int):
+    return {"item_id": item_id}
