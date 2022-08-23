@@ -1,24 +1,34 @@
 <html>
+
 <head>
-    <title>Payment Options</title>
-    <link href="{{ url_for('static', path='/styles.css') }}" rel="stylesheet">
+    <title>Zego Payment Options</title>
 </head>
+
 <body>
-    <h1>Payment Options</h1>
-    <h2>One off</h2>
-    <h3>Item ID: {{ checkout_uuid }}</h3>
-    <h3>Amount: £100</h3>
-    <h3>Is Availble: {{ is_available.StripePaymentOption}}</h3>
-    <h3>Description: {{ get_description.StripePaymentOption}}</h3>
-    <h3>Session Setup: {{ payment_session_setup.StripePaymentOption}}</h3>
-    <h3>Session URL: {{ payment_session_redirect_url.StripePaymentOption}}</h3>
-    
-    <h2>Monthly</h2>
-    <h3>Item ID: {{ checkout_uuid }}</h3>
-    <h3>Amount: £100</h3>
-    <h3>Is Availble: {{ is_available.PCLPaymentOption}}</h3>
-    <h3>Description: {{ get_description.PCLPaymentOption}}</h3>
-    <h3>Session Setup: {{ payment_session_setup.PCLPaymentOption}}</h3>
-    <h3>Session URL: {{ payment_session_redirect_url.PCLPaymentOption}}</h3>
+<h1>Zego Payment Options</h1>
+
+{% for p in options_list %}
+<div>
+    <input type="radio" id="payment_option" name="payment_option" value="{{p.redirect_url}}">
+    <label for="payment_option"> Payment Method: {{p.payment_method}} Amount: {{p.amount}} Description:
+        {{p.description}} </label><br>
+</div>
+{% endfor %}
+
+<script type="text/javascript">
+    function redirect() {
+        var textValue = document.querySelector('input[name="payment_option"]:checked').value;
+        {
+            location.href = textValue;
+        }
+    }
+</script>
+
+<div class="pay">
+    <input type="button" onclick="javascript:redirect()"
+           value="Payment redirect"/>
+</div>
+
+
 </body>
-</html
+</html>
