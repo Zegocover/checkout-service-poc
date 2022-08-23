@@ -5,3 +5,5 @@ sqlalchemy
 pydantic
 tortoise-orm
 asyncpg
+jinja2
+pydantic

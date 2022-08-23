@@ -1,15 +1,21 @@
 from typing import List
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
+from fastapi.responses import HTMLResponse
+from fastapi.staticfiles import StaticFiles
+from fastapi.templating import Jinja2Templates
 
 from models.models import CheckoutSessionDb
 from services.session_services import create_checkout_session
 from models.schemas import CheckoutSessionIntentRequest, CheckoutSessionIntentResponse
+
 from db import init_db
-from uuid import uuid4
 
 app = FastAPI()
 
+app.mount("/static", StaticFiles(directory="static"), name="static")
+
+templates = Jinja2Templates(directory="templates")
 
 
 @app.on_event("startup")
@@ -27,6 +33,7 @@ async def shutdown_event():
 def index():
     return {"data": ""}
 
+
 @app.get('/session/{session_id}', response_model=CheckoutSessionIntentResponse)
 async def checkout_session(session_id: str):
     session = await CheckoutSessionDb.get(id=session_id)
@@ -41,3 +48,7 @@ async def checkout_session():
 async def checkout_session_intent(checkout_session_request: CheckoutSessionIntentRequest):
     session = await create_checkout_session(checkout_session_request)
     return session
+
+@app.get('/checkout_items/{item_id}', response_class=HTMLResponse)
+def payment_options(request: Request, item_id: int):
+    return templates.TemplateResponse("payment_options.html", {"request": request, "item_id": item_id})
