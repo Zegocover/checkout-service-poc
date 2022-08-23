@@ -1,3 +1,4 @@
+from tabnanny import check
 from tortoise import models, fields
 from uuid import UUID, uuid4
 
@@ -77,15 +78,23 @@ class PCLPaymentOption:
 
 
 async def get_payment_options(checkout_session: CheckoutSession):
-    is_available = dict()
-    get_description = dict()
-    payment_session_setup = dict()
-    payment_session_redirect_url = dict()
+    available_payment_options = []
+    return_list = []
+    option_dict = dict()
 
     for payment_option in [StripePaymentOption, PCLPaymentOption]:
-        is_available[payment_option.__name__] = await payment_option.is_available(checkout_session)
-        get_description[payment_option.__name__] = payment_option.get_description(checkout_session)
-        # payment_session_setup[payment_option.__name__] = payment_option.payment_session_setup(checkout_session)
-        payment_session_redirect_url[payment_option.__name__] = payment_option.payment_session_redirect_url(checkout_session)
+        if await payment_option.is_available(checkout_session):
+            available_payment_options.append(payment_option)
 
-    return (is_available, get_description, payment_session_setup, payment_session_redirect_url)
+    
+    for option in available_payment_options:
+        option_dict["payment_method"] = option.__name__
+        option_dict["description"] = payment_option.get_description(checkout_session)
+        option_dict["redirect_url"] = payment_option.payment_session_redirect_url(checkout_session)
+        option_dict["success_url"] = checkout_session.success_url
+        option_dict["cancel_url"] = checkout_session.cancel_url
+        option_dict["amount"] = checkout_session.total()
+
+        return_list.append(option_dict)
+
+    return return_list

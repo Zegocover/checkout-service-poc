@@ -54,15 +54,12 @@ async def checkout_session_intent(checkout_session_request: CheckoutSessionInten
 @app.get('/payment-options/{session_token}', response_class=HTMLResponse)
 async def payment_options(request: Request, session_token: str):
     checkout_session = await load_checkout_session(session_token)
-    is_available, get_description, payment_session_setup, payment_session_redirect_url = await get_payment_options(checkout_session)
+    options_list = await get_payment_options(checkout_session)
 
     return templates.TemplateResponse("payment_options.html",
         {
             "request": request,
             "checkout_uuid": session_token,
-            "is_available": is_available,
-            "get_description": get_description,
-            "payment_session_setup": payment_session_setup,
-            "payment_session_redirect_url": payment_session_redirect_url,
+            "options_list": options_list,
         }
     )
