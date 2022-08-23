@@ -7,6 +7,8 @@ from fastapi.templating import Jinja2Templates
 
 from models.models import CheckoutSessionDb
 from services.session_services import create_checkout_session
+from services.checkout_session_mock import CheckoutSession
+from services.payment_option import get_payment_options
 from models.schemas import CheckoutSessionIntentRequest, CheckoutSessionIntentResponse
 
 from db import init_db
@@ -49,6 +51,18 @@ async def checkout_session_intent(checkout_session_request: CheckoutSessionInten
     session = await create_checkout_session(checkout_session_request)
     return session
 
-@app.get('/checkout_items/{item_id}', response_class=HTMLResponse)
-def payment_options(request: Request, item_id: int):
-    return templates.TemplateResponse("payment_options.html", {"request": request, "item_id": item_id})
+@app.get('/checkout_items/{checkout_uuid}', response_class=HTMLResponse)
+def payment_options(request: Request, checkout_uuid: int):
+    checkout_session = CheckoutSession
+    is_available, get_description, payment_session_setup, payment_session_redirect_url = get_payment_options(checkout_session)
+    
+    return templates.TemplateResponse("payment_options.html",
+        {
+            "request": request, 
+            "checkout_uuid": checkout_uuid, 
+            "is_available": is_available,
+            "get_description": get_description,
+            "payment_session_setup": payment_session_setup,
+            "payment_session_redirect_url": payment_session_redirect_url,
+        }
+    )
