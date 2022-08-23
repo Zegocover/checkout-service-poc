@@ -52,7 +52,7 @@ async def checkout_session_intent(checkout_session_request: CheckoutSessionInten
     session = await create_checkout_session(checkout_session_request)
     return session
 
-@app.get('/checkout_items/{checkout_uuid}', response_class=HTMLResponse)
+@app.get('/payment-options/{checkout_uuid}', response_class=HTMLResponse)
 def payment_options(request: Request, checkout_uuid: int):
     checkout_session = CheckoutSession
     is_available, get_description, payment_session_setup, payment_session_redirect_url = get_payment_options(checkout_session)
