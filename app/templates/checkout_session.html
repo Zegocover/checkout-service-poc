@@ -49,9 +49,9 @@
         console.log(discount_code)
         console.log(session_token)
 
-        $.post("http://127.0.0.1:8000/redeem-discount/{{session_token}}/?code=Craig")
+        $.post(`http://127.0.0.1:8000/redeem-discount/${session_token}/?code=${discount_code}`)
 
-        location.reload()
+        window.location.reload()
     }
 </script>
 

@@ -11,6 +11,8 @@ from models.models import CheckoutSessionDb
 
 from services.session_models import AddOnCheckoutItem
 
+from services.session_models import DiscountCheckoutItem
+
 
 async def create_checkout_session(checkout_session_request: CheckoutSessionIntentRequest):
 
@@ -30,13 +32,13 @@ async def create_checkout_session(checkout_session_request: CheckoutSessionInten
     return session
 
 
-async def load_checkout_session(session_token: str):
+async def load_checkout_session(session_token: str) -> CheckoutSession:
     session_db = await CheckoutSessionDb.get(session_token=session_token)
     checkout_items_db = await session_db.items
 
     checkout_items = []
 
-    checkout_item_map = {"Invoice": InvoiceCheckoutItem, "Quote": NewBusinessCheckoutItem, "AddOn": AddOnCheckoutItem}
+    checkout_item_map = {"Invoice": InvoiceCheckoutItem, "Quote": NewBusinessCheckoutItem, "AddOn": AddOnCheckoutItem, "Discount": DiscountCheckoutItem}
 
     for item_db in checkout_items_db:
         item_class = checkout_item_map.get(item_db.type)
@@ -51,4 +53,14 @@ async def load_checkout_session(session_token: str):
         checkout_items=checkout_items,
     )
 
+async def apply_discount(session_token, discount_code):
+    session = await load_checkout_session(session_token)
 
+    discount_item = DiscountCheckoutItem(external_id=discount_code)
+
+    await session.add_item(discount_item)
+
+    checkout_session = await CheckoutSessionDb.get(session_token=session_token)
+    print(checkout_session.id)
+
+    await discount_item.save(checkout_session=checkout_session)

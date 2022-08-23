@@ -4,9 +4,10 @@ from fastapi import FastAPI, Request
 from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
+from pydantic.types import UUID
 
 from models.models import CheckoutSessionDb
-from services.session_services import create_checkout_session, load_checkout_session
+from services.session_services import create_checkout_session, load_checkout_session, apply_discount
 from services.session_services import create_checkout_session
 from services.payment_option import get_payment_options
 from models.schemas import CheckoutSessionIntentRequest, CheckoutSessionIntentResponse
@@ -65,8 +66,8 @@ async def payment_options(request: Request, session_token: str):
     )
 
 
-@app.post('/redeem-discount/{checkout_session_id}/')
-async def redeem_discount(checkout_session_id: UUID, code: str = None):
-    print(f"checkout_session_id {checkout_session_id}")
-    print(f"discount_code {code}")
+@app.post('/redeem-discount/{checkout_session_id}')
+async def redeem_discount(checkout_session_id: UUID, code):
+    await apply_discount(checkout_session_id, code)
+
     return {}

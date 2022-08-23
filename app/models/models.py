@@ -16,7 +16,7 @@ class CheckoutItemDb(models.Model):
     amount = fields.DecimalField(max_digits=30, decimal_places=2)
     description = fields.TextField()
     checkout_session_id = fields.ForeignKeyField(model_name="models.CheckoutSessionDb", related_name="items")
-    external_id = fields.UUIDField()
+    external_id = fields.CharField(max_length=255)
 
     def __str__(self):
         return f"{self.description} {self.amount}"

@@ -1,24 +1,18 @@
 from dataclasses import dataclass
 from decimal import Decimal
 from typing import List
-from uuid import uuid4
-
-from pydantic import UUID4
-
-from services.quotes import Quote
-
-from services.quotes import get_quote
 
 from models.models import CheckoutItemDb
-
 from models.models import CheckoutSessionDb
-
+from pydantic import UUID4
 from services.invoices import get_invoice
+from services.quotes import Quote
+from services.quotes import get_quote
 
 
 @dataclass
 class CheckoutItem:
-    external_id: UUID4
+    external_id: str
     amount: Decimal = None
     description: str = None
     type: str = None
@@ -31,6 +25,7 @@ class CheckoutItem:
 
     async def save(self, checkout_session):
         pass
+
 
 @dataclass
 class NewBusinessCheckoutItem(CheckoutItem):
@@ -63,6 +58,7 @@ class NewBusinessCheckoutItem(CheckoutItem):
             type="Quote",
         )
 
+
 class AddOnCheckoutItem(CheckoutItem):
     async def get_data(self):
         pass
@@ -75,6 +71,7 @@ class AddOnCheckoutItem(CheckoutItem):
             checkout_session_id=checkout_session,
             type="AddOn",
         )
+
 
 @dataclass
 class InvoiceCheckoutItem(CheckoutItem):
@@ -92,6 +89,23 @@ class InvoiceCheckoutItem(CheckoutItem):
             type="Invoice",
         )
 
+
+@dataclass
+class DiscountCheckoutItem(CheckoutItem):
+    async def get_data(self):
+        self.description = f"Discount Code: {''.join([i for i in str(self.external_id) if not i.isdigit()])}"
+        self.amount = Decimal("-123.00")
+
+    async def save(self, checkout_session):
+        await CheckoutItemDb.create(
+            description=self.description,
+            external_id=self.external_id,
+            amount=self.amount,
+            checkout_session_id=checkout_session,
+            type="Discount",
+        )
+
+
 @dataclass
 class CheckoutSession:
     success_url: str
@@ -101,7 +115,7 @@ class CheckoutSession:
 
     checkout_items: List[CheckoutItem] = None
 
-    async def add_item(self, item:CheckoutItem):
+    async def add_item(self, item: CheckoutItem):
         if self.checkout_items is None:
             self.checkout_items = []
         await item.get_data()
