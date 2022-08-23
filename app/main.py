@@ -1,11 +1,13 @@
 from typing import List
 
-from logging import PlaceHolder
 from fastapi import FastAPI, Request
 from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 
+from models.models import CheckoutSessionDb
+from services.session_services import create_checkout_session
+from models.schemas import CheckoutSessionIntentRequest, CheckoutSessionIntentResponse
 
 from db import init_db
 
