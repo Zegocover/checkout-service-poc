@@ -13,6 +13,8 @@ from models.models import CheckoutItemDb
 
 from models.models import CheckoutSessionDb
 
+from services.invoices import get_invoice
+
 
 @dataclass
 class CheckoutItem:
@@ -42,8 +44,25 @@ class NewBusinessCheckoutItem(CheckoutItem):
         await CheckoutItemDb.create(
             description=self.description,
             external_id=self.external_id,
+            amount=self.amount,
             checkout_session_id=checkout_session,
             type="Quote",
+        )
+
+@dataclass
+class InvoiceCheckoutItem(CheckoutItem):
+    async def get_data(self):
+        invoice = await get_invoice(self.external_id)
+        self.description = invoice.description
+        self.amount = invoice.amount
+
+    async def save(self, checkout_session):
+        await CheckoutItemDb.create(
+            description=self.description,
+            external_id=self.external_id,
+            amount=self.amount,
+            checkout_session_id=checkout_session,
+            type="Invoice",
         )
 
 @dataclass
@@ -51,12 +70,15 @@ class CheckoutSession:
     success_url: str
     cancel_url: str
 
-    session_token: UUID4 = uuid4()
+    session_token: UUID4
 
     checkout_items: List[CheckoutItem] = None
 
     async def add_item(self, item:CheckoutItem):
+        if self.checkout_items is None:
+            self.checkout_items = []
         await item.get_data()
+        self.checkout_items.append(item)
 
     async def save(self):
         session_db = await CheckoutSessionDb.create(
