@@ -1,3 +1,5 @@
+from typing import List
+
 from logging import PlaceHolder
 from fastapi import FastAPI, Request
 from fastapi.responses import HTMLResponse
@@ -29,6 +31,21 @@ async def shutdown_event():
 def index():
     return {"data": ""}
 
+
+@app.get('/session/{session_id}', response_model=CheckoutSessionIntentResponse)
+async def checkout_session(session_id: str):
+    session = await CheckoutSessionDb.get(id=session_id)
+    return session
+
+@app.get('/sessions', response_model=List[CheckoutSessionIntentResponse])
+async def checkout_session():
+    sessions = await CheckoutSessionDb.all()
+    return sessions
+
+@app.post('/checkout-session-intent', response_model=CheckoutSessionIntentResponse)
+async def checkout_session_intent(checkout_session_request: CheckoutSessionIntentRequest):
+    session = await create_checkout_session(checkout_session_request)
+    return session
 
 @app.get('/checkout_items/{item_id}', response_class=HTMLResponse)
 def payment_options(request: Request, item_id: int):
