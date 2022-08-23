@@ -3,6 +3,21 @@
 <style>
     body {
         font-family: "sans-serif";
+        padding-left: 10px;
+    }
+
+    .session-token {
+        display: none;
+    }
+
+    .left-block {
+        display: inline-block;
+    }
+
+    .right-block {
+        display: inline-block;
+        vertical-align: top;
+        padding-left: 200px;
     }
 
     .item-description {
@@ -22,27 +37,59 @@
         width: 500px;
     }
 </style>
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+
+<script>
+    function submit_discount() {
+        console.log("Craig");
+        let discount_code = $('.discount-code').val()
+        let session_token = $('.session-token').text()
+
+        console.log(discount_code)
+        console.log(session_token)
+
+        $.post("http://127.0.0.1:8000/redeem-discount/{{session_token}}/?code=Craig")
+
+        location.reload()
+    }
+</script>
+
 <head>
     <title>Zego Checkout</title>
 </head>
 <body>
 <h1>Zego Checkout</h1>
 
-{% for item in session.checkout_items %}
-    <div>
-        <div class="item-description">{{ item.description }}</div>
-        <div class="item-amount"> £{{ item.amount }}</div>
-    </div>
-{% endfor %}
+<div class="session-token">{{ session_token }}</div>
 
-<div>
-    <div class="item-description">Total</div>
-    <div class="item-amount">£{{ session.total() }}</div>
+<div class="left-block">
+    {% for item in session.checkout_items %}
+        <div>
+            <div class="item-description">{{ item.description }}</div>
+            <div class="item-amount"> £{{ item.amount }}</div>
+        </div>
+    {% endfor %}
+
+    <div>
+        <div class="item-description">Total</div>
+        <div class="item-amount">£{{ session.total() }}</div>
+    </div>
+
+    <div class="pay">
+        <input type="button" onclick="location.href='http://127.0.0.1:8000/payment-options/{{ session_token }}';"
+               value="Pay"/>
+    </div>
 </div>
 
-<div class="pay">
-    <input type="button" onclick="location.href='http://127.0.0.1:8000/payment-options/{{ session_token }}';"
-           value="Pay"/>
+<div class="right-block">
+    <form action="/redeem-discount" method="post" id="discount_form">
+        <label for="discount_code">Discount Code:</label>
+        <input class="discount-code" type="text" id="discount_code" name="discount_code"><br>
+
+    </form>
+
+    <button type="button" onclick="submit_discount()">Submit</button>
 </div>
 
 </body>

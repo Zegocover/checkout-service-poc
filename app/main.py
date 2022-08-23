@@ -67,3 +67,10 @@ def payment_options(request: Request, checkout_uuid: int):
             "payment_session_redirect_url": payment_session_redirect_url,
         }
     )
+
+
+@app.post('/redeem-discount/{checkout_session_id}/')
+async def redeem_discount(checkout_session_id: UUID, code: str = None):
+    print(f"checkout_session_id {checkout_session_id}")
+    print(f"discount_code {code}")
+    return {}
