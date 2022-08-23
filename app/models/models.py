@@ -1,17 +1,6 @@
 from tortoise import models, fields
 
 
-class TestModel(models.Model):
-    id = fields.IntField(pk=True)
-    name = fields.TextField()
-
-
-class TestModel2(models.Model):
-    id = fields.IntField(pk=True)
-    name = fields.TextField()
-
-
-
 class CheckoutSessionDb(models.Model):
     id = fields.UUIDField(pk=True)
     session_token = fields.UUIDField(unique=True)
