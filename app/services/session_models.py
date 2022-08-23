@@ -26,6 +26,9 @@ class CheckoutItem:
     async def get_data(self):
         pass
 
+    async def get_additional_data(self, checkout_session):
+        pass
+
     async def save(self, checkout_session):
         pass
 
@@ -40,6 +43,17 @@ class NewBusinessCheckoutItem(CheckoutItem):
         self.description = f"Quote product reference: {policy_quote.reference.product_id}"
         self.amount = policy_quote.total_premium
 
+    async def get_additional_data(self, checkout_session):
+        add_ons = [charge for charge in self.quote.state_priced.charges if charge.reference.addon_id]
+
+        for add_on in add_ons:
+            item = AddOnCheckoutItem(
+                description=f"AddOn product {add_on.reference.product_id}",
+                amount=add_on.total_premium,
+                external_id=add_on.reference.addon_id
+            )
+            await checkout_session.add_item(item)
+
     async def save(self, checkout_session):
         await CheckoutItemDb.create(
             description=self.description,
@@ -47,6 +61,19 @@ class NewBusinessCheckoutItem(CheckoutItem):
             amount=self.amount,
             checkout_session_id=checkout_session,
             type="Quote",
+        )
+
+class AddOnCheckoutItem(CheckoutItem):
+    async def get_data(self):
+        pass
+
+    async def save(self, checkout_session):
+        await CheckoutItemDb.create(
+            description=self.description,
+            external_id=self.external_id,
+            amount=self.amount,
+            checkout_session_id=checkout_session,
+            type="AddOn",
         )
 
 @dataclass
@@ -79,6 +106,8 @@ class CheckoutSession:
             self.checkout_items = []
         await item.get_data()
         self.checkout_items.append(item)
+
+        await item.get_additional_data(self)
 
     async def save(self):
         session_db = await CheckoutSessionDb.create(
