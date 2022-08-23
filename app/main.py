@@ -6,7 +6,7 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 
 from models.models import CheckoutSessionDb
-from services.session_services import create_checkout_session
+from services.session_services import create_checkout_session, load_checkout_session
 from models.schemas import CheckoutSessionIntentRequest, CheckoutSessionIntentResponse
 
 from db import init_db
@@ -34,10 +34,10 @@ def index():
     return {"data": ""}
 
 
-@app.get('/session/{session_id}', response_model=CheckoutSessionIntentResponse)
-async def checkout_session(session_id: str):
-    session = await CheckoutSessionDb.get(id=session_id)
-    return session
+@app.get('/session/{session_token}', response_class=HTMLResponse)
+async def checkout_session(request: Request, session_token: str):
+    session = await load_checkout_session(session_token=session_token)
+    return templates.TemplateResponse("checkout_session.html", {"request": request, "session": session, "session_token": session_token})
 
 @app.get('/sessions', response_model=List[CheckoutSessionIntentResponse])
 async def checkout_session():

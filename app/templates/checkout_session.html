@@ -1,0 +1,12 @@
+<html>
+<head>
+  <title>Checkout Session</title>
+</head>
+<body>
+  <h2>Session Token: {{ session_token }}</h2>
+  {% for item in session.checkout_items %}
+    <h2>{{ item }}</h2>
+  {% endfor %}}
+
+</body>
+</html>
