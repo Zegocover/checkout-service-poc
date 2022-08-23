@@ -1,5 +1,6 @@
 from fastapi import FastAPI
 
+from services.session_services import create_checkout_session
 from models.schemas import CheckoutSessionIntentRequest, CheckoutSessionIntentResponse
 from db import init_db
 from uuid import uuid4
@@ -23,7 +24,7 @@ async def shutdown_event():
 def index():
     return {"data": ""}
 
-@app.post('/checkout-session-intent')
+@app.post('/checkout-session-intent', response_model=CheckoutSessionIntentResponse)
 async def checkout_session_intent(checkout_session_request: CheckoutSessionIntentRequest):
-    session = uuid4()
+    session = await create_checkout_session(checkout_session_request)
     return session
