@@ -1,10 +1,17 @@
 from logging import PlaceHolder
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
+from fastapi.responses import HTMLResponse
+from fastapi.staticfiles import StaticFiles
+from fastapi.templating import Jinja2Templates
+
 
 from db import init_db
 
 app = FastAPI()
 
+app.mount("/static", StaticFiles(directory="static"), name="static")
+
+templates = Jinja2Templates(directory="templates")
 
 
 @app.on_event("startup")
@@ -22,6 +29,7 @@ async def shutdown_event():
 def index():
     return {"data": ""}
 
-@app.get('/checkout_items/{item_id}')
-def payment_options(item_id: int):
-    return {"item_id": item_id}
+
+@app.get('/checkout_items/{item_id}', response_class=HTMLResponse)
+def payment_options(request: Request, item_id: int):
+    return templates.TemplateResponse("payment_options.html", {"request": request, "item_id": item_id})
