@@ -109,6 +109,10 @@ class CheckoutSession:
 
         await item.get_additional_data(self)
 
+    def total(self):
+        items = self.checkout_items
+        return sum(item.amount for item in items)
+
     async def save(self):
         session_db = await CheckoutSessionDb.create(
             session_token=self.session_token,

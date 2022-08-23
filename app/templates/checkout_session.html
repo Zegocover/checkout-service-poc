@@ -1,12 +1,49 @@
 <html>
+
+<style>
+    body {
+        font-family: "sans-serif";
+    }
+
+    .item-description {
+        width: 400px;
+        display: inline-block;
+    }
+
+    .item-amount {
+        width: 100px;
+        display: inline-block;
+        text-align: right;
+    }
+
+    .pay {
+        padding-top: 100px;
+        text-align: right;
+        width: 500px;
+    }
+</style>
 <head>
-  <title>Checkout Session</title>
+    <title>Zego Checkout</title>
 </head>
 <body>
-  <h2>Session Token: {{ session_token }}</h2>
-  {% for item in session.checkout_items %}
-    <h2>{{ item }}</h2>
-  {% endfor %}}
+<h1>Zego Checkout</h1>
+
+{% for item in session.checkout_items %}
+    <div>
+        <div class="item-description">{{ item.description }}</div>
+        <div class="item-amount"> £{{ item.amount }}</div>
+    </div>
+{% endfor %}
+
+<div>
+    <div class="item-description">Total</div>
+    <div class="item-amount">£{{ session.total() }}</div>
+</div>
+
+<div class="pay">
+    <input type="button" onclick="location.href='http://127.0.0.1:8000/payment-options/{{ session_token }}';"
+           value="Pay"/>
+</div>
 
 </body>
 </html>
