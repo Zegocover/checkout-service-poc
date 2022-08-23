@@ -12,5 +12,7 @@ async def create_checkout_session(checkout_session_request: CheckoutSessionInten
         quote = NewBusinessCheckoutItem(external_id=quote_id)
         await session.add_item(quote)
 
+    await session.save()
+
     return session
 
