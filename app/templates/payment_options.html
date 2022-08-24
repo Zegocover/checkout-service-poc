@@ -20,15 +20,22 @@
         padding-left: 200px;
     }
 
-    .item-description {
-        width: 400px;
-        display: inline-block;
-    }
-
-    .item-amount {
-        width: 100px;
+    .amount {
         display: inline-block;
         text-align: right;
+        width: 100px;
+        vertical-align: center;
+    }
+
+    .description {
+        display: inline-block;
+        text-align: left;
+        width: 400px;
+        vertical-align: center;
+    }
+
+    h3 {
+        display: inline-block;
     }
 
     .pay {
@@ -46,11 +53,16 @@
 <h1>Zego Payment Options</h1>
 
 {% for p in options_list %}
-<div>
-    <input type="radio" id="{{ p.payment_method }}" name="payment_option" value="{{p.redirect_url}}">
-    <label for="{{ p.payment_method }}"> Payment Method: {{p.payment_method}} Amount: {{p.amount}} Description:
-        {{p.description}} </label><br>
-</div>
+    <div>
+        <input type="radio" id="{{ p.payment_method }}" name="payment_option" value="{{ p.redirect_url }}">
+        <label class="option-label" for="{{ p.payment_method }}">
+            <div class="description">
+                <h3>{{ p.payment_method }}</h3>
+                <span> {{ p.description }} </span>
+            </div>
+            <div class="amount">{{ "£%.2f"|format(p.amount) }}</div>
+        </label><br>
+    </div>
 {% endfor %}
 
 <script type="text/javascript">
