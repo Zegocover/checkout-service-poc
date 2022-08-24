@@ -1,5 +1,6 @@
 from uuid import uuid4
 
+from fastapi import HTTPException
 from models.schemas import CheckoutSessionIntentRequest
 from services.session_models import CheckoutSession
 
@@ -16,6 +17,7 @@ from services.session_models import DiscountCheckoutItem
 from services.session_models import MTACheckoutItem, CancellationCheckoutItem, PCLSettlementCheckoutItem
 
 from services.session_models import CreditNoteCheckoutItem
+from tortoise.exceptions import ValidationError
 
 
 def build_quote(quote_id):
@@ -37,9 +39,14 @@ def build_invoice(invoice_id):
     else:
         return InvoiceCheckoutItem(external_id=invoice_id)
 
-async def create_checkout_session(checkout_session_request: CheckoutSessionIntentRequest):
 
-    session = CheckoutSession(success_url=checkout_session_request.success_url, cancel_url=checkout_session_request.cancel_url, session_token=uuid4(), user_type=checkout_session_request.user_type)
+async def create_checkout_session(checkout_session_request: CheckoutSessionIntentRequest):
+    if all([not checkout_session_request.invoice_ids, not checkout_session_request.quote_id]):
+        raise HTTPException(status_code=400, detail="Either invoice_ids or quote_id are required")
+
+    session = CheckoutSession(success_url=checkout_session_request.success_url,
+                              cancel_url=checkout_session_request.cancel_url, session_token=uuid4(),
+                              user_type=checkout_session_request.user_type)
 
     if quote_id := checkout_session_request.quote_id:
         try:
@@ -47,7 +54,6 @@ async def create_checkout_session(checkout_session_request: CheckoutSessionInten
             await session.add_item(quote)
         except ValueError:
             pass
-
 
     if checkout_session_request.invoice_ids:
         for invoice_id in checkout_session_request.invoice_ids:
@@ -80,9 +86,9 @@ async def load_checkout_session(session_token: str) -> CheckoutSession:
 
     for item_db in checkout_items_db:
         item_class = checkout_item_map.get(item_db.type)
-        item = item_class(amount=item_db.amount, description=item_db.description, type=item_db.type, external_id=item_db.external_id)
+        item = item_class(amount=item_db.amount, description=item_db.description, type=item_db.type,
+                          external_id=item_db.external_id)
         checkout_items.append(item)
-
 
     return CheckoutSession(
         session_token=session_db.session_token,
@@ -91,6 +97,7 @@ async def load_checkout_session(session_token: str) -> CheckoutSession:
         user_type=session_db.user_type,
         checkout_items=checkout_items,
     )
+
 
 async def apply_discount(session_token, discount_code):
     session = await load_checkout_session(session_token)
