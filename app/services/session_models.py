@@ -93,7 +93,7 @@ class InvoiceCheckoutItem(CheckoutItem):
 @dataclass
 class DiscountCheckoutItem(CheckoutItem):
     async def get_data(self):
-        self.description = f"Discount Code: {''.join([i for i in str(self.external_id) if not i.isdigit()])}"
+        self.description = f"Discount: {''.join([i for i in str(self.external_id) if not i.isdigit()])}"
         self.amount = Decimal("-123.00")
 
     async def save(self, checkout_session):
