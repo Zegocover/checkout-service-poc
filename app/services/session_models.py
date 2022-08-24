@@ -7,9 +7,10 @@ from models.models import CheckoutSessionDb
 from pydantic import UUID4
 from services.invoices import get_invoice
 from services.quotes import Quote
+from services.quotes import get_mta_quote, get_pcl_settlement_figure
 from services.quotes import get_quote
 
-from services.quotes import get_mta_quote, get_pcl_settlement_figure
+from services.invoices import get_credit_note
 
 
 @dataclass
@@ -143,6 +144,7 @@ class PCLSettlementCheckoutItem(CheckoutItem):
             type="pcl_settlement",
         )
 
+
 @dataclass
 class InvoiceCheckoutItem(CheckoutItem):
     async def get_data(self):
@@ -157,6 +159,22 @@ class InvoiceCheckoutItem(CheckoutItem):
             amount=self.amount,
             checkout_session_id=checkout_session,
             type="Invoice",
+        )
+
+
+class CreditNoteCheckoutItem(CheckoutItem):
+    async def get_data(self):
+        credit_note = await get_credit_note(self.external_id)
+        self.description = credit_note.description
+        self.amount = credit_note.amount
+
+    async def save(self, checkout_session):
+        await CheckoutItemDb.create(
+            description=self.description,
+            external_id=self.external_id,
+            amount=self.amount,
+            checkout_session_id=checkout_session,
+            type="CreditNote",
         )
 
 

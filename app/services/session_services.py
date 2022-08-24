@@ -15,10 +15,11 @@ from services.session_models import DiscountCheckoutItem
 
 from services.session_models import MTACheckoutItem, CancellationCheckoutItem, PCLSettlementCheckoutItem
 
+from services.session_models import CreditNoteCheckoutItem
+
 
 def build_quote(quote_id):
     last_id_digit = str(quote_id)[-1]
-
 
     if last_id_digit == "6":
         return MTACheckoutItem(external_id=quote_id)
@@ -27,6 +28,14 @@ def build_quote(quote_id):
     else:
         return NewBusinessCheckoutItem(external_id=quote_id)
 
+
+def build_invoice(invoice_id):
+    last_id_digit = str(invoice_id)[-1]
+
+    if last_id_digit == "5":
+        return CreditNoteCheckoutItem(external_id=invoice_id)
+    else:
+        return InvoiceCheckoutItem(external_id=invoice_id)
 
 async def create_checkout_session(checkout_session_request: CheckoutSessionIntentRequest):
 
@@ -42,7 +51,9 @@ async def create_checkout_session(checkout_session_request: CheckoutSessionInten
 
     if checkout_session_request.invoice_ids:
         for invoice_id in checkout_session_request.invoice_ids:
-            invoice = InvoiceCheckoutItem(external_id=invoice_id)
+            invoice = build_invoice(invoice_id)
+            print(invoice)
+
             await session.add_item(invoice)
 
     await session.save()
@@ -64,7 +75,7 @@ async def load_checkout_session(session_token: str) -> CheckoutSession:
         "MTA": MTACheckoutItem,
         "Cancellation": CancellationCheckoutItem,
         "pcl_settlement": PCLSettlementCheckoutItem,
-
+        "CreditNote": CreditNoteCheckoutItem,
     }
 
     for item_db in checkout_items_db:
