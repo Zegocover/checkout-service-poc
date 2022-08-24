@@ -35,7 +35,7 @@ class NewBusinessCheckoutItem(CheckoutItem):
         self.quote = await get_quote(self.external_id)
 
         policy_quote, *_ = [charge for charge in self.quote.state_priced.charges if charge.reference.product_id]
-        self.description = f"Quote product reference: {policy_quote.reference.product_id}"
+        self.description = f"New Insurance Policy"
         self.amount = policy_quote.total_premium
 
     async def get_additional_data(self, checkout_session):
@@ -43,7 +43,7 @@ class NewBusinessCheckoutItem(CheckoutItem):
 
         for add_on in add_ons:
             item = AddOnCheckoutItem(
-                description=f"AddOn product {add_on.reference.product_id}",
+                description=f"Policy Add-On",
                 amount=add_on.total_premium,
                 external_id=add_on.reference.addon_id
             )
