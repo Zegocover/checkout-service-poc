@@ -49,6 +49,21 @@ async def generate_fake_quote(quote_id: UUID4) -> Quote:
     )
 
 
+async def generate_fake_mta_quote(quote_id: UUID4) -> Quote:
+    policy_id = Reference(product_id=uuid4())
+    policy_charge = ProductCharge(
+        reference=policy_id,
+        total_premium=Decimal(random.randrange(50, 400))
+    )
+    charges = [policy_charge]
+
+    return Quote(
+        quote_id=quote_id,
+        state="priced",
+        state_priced=PriceBreakdown(charges=charges)
+    )
+
+
 def generate_add_on():
     add_on_id = Reference(addon_id=uuid4())
     policy_charge = ProductCharge(
@@ -60,3 +75,26 @@ def generate_add_on():
 
 async def get_quote(quote_id: UUID4) -> Quote:
     return await generate_fake_quote(quote_id)
+
+
+async def get_mta_quote(quote_id: UUID4) -> Quote:
+    return await generate_fake_mta_quote(quote_id)
+
+
+async def get_cancellation_quote(quote_id: UUID4) -> Quote:
+    quote = await generate_fake_mta_quote(quote_id)
+    quote.state_priced = quote.state_priced * -1
+    return quote
+
+
+@dataclass
+class SettlementFigure:
+    amount: Decimal
+    pcl_quote_id: UUID4
+
+
+async def get_pcl_settlement_figure(quote_id: UUID4) -> SettlementFigure:
+    return SettlementFigure(
+        amount=Decimal(random.randrange(50, 1000)),
+        pcl_quote_id=uuid4(),
+    )

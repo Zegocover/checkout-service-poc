@@ -9,6 +9,8 @@ from services.invoices import get_invoice
 from services.quotes import Quote
 from services.quotes import get_quote
 
+from services.quotes import get_mta_quote, get_pcl_settlement_figure
+
 
 @dataclass
 class CheckoutItem:
@@ -72,6 +74,74 @@ class AddOnCheckoutItem(CheckoutItem):
             type="AddOn",
         )
 
+
+@dataclass
+class MTACheckoutItem(CheckoutItem):
+    async def get_data(self):
+        self.quote = await get_mta_quote(self.external_id)
+
+        policy_quote, *_ = [charge for charge in self.quote.state_priced.charges if charge.reference.product_id]
+        self.description = f"Policy MTA"
+        self.amount = policy_quote.total_premium
+
+    async def get_additional_data(self, checkout_session):
+        pass
+
+    async def save(self, checkout_session):
+        await CheckoutItemDb.create(
+            description=self.description,
+            external_id=self.external_id,
+            amount=self.amount,
+            checkout_session_id=checkout_session,
+            type="MTA",
+        )
+
+
+@dataclass
+class CancellationCheckoutItem(CheckoutItem):
+    async def get_data(self):
+        self.quote = await get_quote(self.external_id)
+
+        policy_quote, *_ = [charge for charge in self.quote.state_priced.charges if charge.reference.product_id]
+        self.description = f"Policy Cancellation"
+        self.amount = policy_quote.total_premium
+
+    async def get_additional_data(self, checkout_session):
+        settlement = await get_pcl_settlement_figure(self.external_id)
+
+        item = PCLSettlementCheckoutItem(
+            description=f"PCL Settlement Figure",
+            amount=settlement.amount,
+            external_id=str(settlement.pcl_quote_id)
+        )
+        await checkout_session.add_item(item)
+
+    async def save(self, checkout_session):
+        await CheckoutItemDb.create(
+            description=self.description,
+            external_id=self.external_id,
+            amount=self.amount,
+            checkout_session_id=checkout_session,
+            type="Cancellation",
+        )
+
+
+@dataclass
+class PCLSettlementCheckoutItem(CheckoutItem):
+    async def get_data(self):
+        pass
+
+    async def get_additional_data(self, checkout_session):
+        pass
+
+    async def save(self, checkout_session):
+        await CheckoutItemDb.create(
+            description=self.description,
+            external_id=self.external_id,
+            amount=self.amount,
+            checkout_session_id=checkout_session,
+            type="pcl_settlement",
+        )
 
 @dataclass
 class InvoiceCheckoutItem(CheckoutItem):

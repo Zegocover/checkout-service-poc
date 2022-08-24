@@ -13,14 +13,32 @@ from services.session_models import AddOnCheckoutItem
 
 from services.session_models import DiscountCheckoutItem
 
+from services.session_models import MTACheckoutItem, CancellationCheckoutItem, PCLSettlementCheckoutItem
+
+
+def build_quote(quote_id):
+    last_id_digit = str(quote_id)[-1]
+
+
+    if last_id_digit == "6":
+        return MTACheckoutItem(external_id=quote_id)
+    elif last_id_digit == "7":
+        return CancellationCheckoutItem(external_id=quote_id)
+    else:
+        return NewBusinessCheckoutItem(external_id=quote_id)
+
 
 async def create_checkout_session(checkout_session_request: CheckoutSessionIntentRequest):
 
     session = CheckoutSession(success_url=checkout_session_request.success_url, cancel_url=checkout_session_request.cancel_url, session_token=uuid4(), user_type=checkout_session_request.user_type)
 
     if quote_id := checkout_session_request.quote_id:
-        quote = NewBusinessCheckoutItem(external_id=quote_id)
-        await session.add_item(quote)
+        try:
+            quote = build_quote(quote_id)
+            await session.add_item(quote)
+        except ValueError:
+            pass
+
 
     if checkout_session_request.invoice_ids:
         for invoice_id in checkout_session_request.invoice_ids:
@@ -38,7 +56,16 @@ async def load_checkout_session(session_token: str) -> CheckoutSession:
 
     checkout_items = []
 
-    checkout_item_map = {"Invoice": InvoiceCheckoutItem, "Quote": NewBusinessCheckoutItem, "AddOn": AddOnCheckoutItem, "Discount": DiscountCheckoutItem}
+    checkout_item_map = {
+        "Invoice": InvoiceCheckoutItem,
+        "Quote": NewBusinessCheckoutItem,
+        "AddOn": AddOnCheckoutItem,
+        "Discount": DiscountCheckoutItem,
+        "MTA": MTACheckoutItem,
+        "Cancellation": CancellationCheckoutItem,
+        "pcl_settlement": PCLSettlementCheckoutItem,
+
+    }
 
     for item_db in checkout_items_db:
         item_class = checkout_item_map.get(item_db.type)
