@@ -12,6 +12,7 @@ from services.session_services import create_checkout_session, load_checkout_ses
 from services.session_services import create_checkout_session
 from services.payment_option import get_payment_options
 from models.schemas import CheckoutSessionIntentRequest, CheckoutSessionIntentResponse
+from decimal import Decimal
 
 from db import init_db
 
@@ -63,6 +64,29 @@ async def payment_options(request: Request, session_token: str):
             "request": request,
             "checkout_uuid": session_token,
             "options_list": options_list,
+        }
+    )
+    
+@app.get('/stripe-payment/{session_token}', response_class=HTMLResponse)
+async def stripe_payment(request: Request, session_token: str):
+    checkout_session = await load_checkout_session(session_token)
+    import stripe
+    stripe.api_key = "sk_test_TLLgtVWUvJ7FYYzPHtJ0189h"
+
+    intent = stripe.PaymentIntent.create(
+        amount= int(checkout_session.total() * 100),
+        currency="gbp",
+        payment_method_types=["card"],
+        # confirm=True,
+        # return_url= checkout_session.success_url,
+    )
+
+    return templates.TemplateResponse("stripe_payment.html",
+        {
+            "request": request,
+            "total": checkout_session.total(),
+            "client_secret": intent.client_secret,
+            "success_url": checkout_session.success_url,
         }
     )
 

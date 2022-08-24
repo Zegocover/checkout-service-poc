@@ -35,7 +35,7 @@ class StripePaymentOption:
         """
         Builds the url that the user will be redirect to in order to make a payment
         """
-        return "https://stripe.com/docs/"
+        return "http://127.0.0.1:8000/stripe-payment/" + str(checkout_session.session_token)
 
 
 @dataclass
