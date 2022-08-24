@@ -7,6 +7,7 @@ class CheckoutSessionIntentRequest(BaseModel):
 
     invoice_ids: List[UUID4] = []
     quote_id: UUID4 = None
+    user_type: str = "Customer"
     success_url: str
     cancel_url: str
 

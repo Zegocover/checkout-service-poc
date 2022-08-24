@@ -6,6 +6,7 @@ class CheckoutSessionDb(models.Model):
     session_token = fields.UUIDField(unique=True)
     success_url = fields.CharField(max_length=2048)
     cancel_url = fields.CharField(max_length=2048)
+    user_type = fields.CharField(max_length=32, null=True)
 
     def __str__(self):
         return str(self.session_token)

@@ -110,6 +110,7 @@ class DiscountCheckoutItem(CheckoutItem):
 class CheckoutSession:
     success_url: str
     cancel_url: str
+    user_type: str
 
     session_token: UUID4
 
@@ -132,6 +133,7 @@ class CheckoutSession:
             session_token=self.session_token,
             success_url=self.success_url,
             cancel_url=self.cancel_url,
+            user_type=self.user_type,
         )
 
         if self.checkout_items:

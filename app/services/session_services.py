@@ -16,7 +16,7 @@ from services.session_models import DiscountCheckoutItem
 
 async def create_checkout_session(checkout_session_request: CheckoutSessionIntentRequest):
 
-    session = CheckoutSession(success_url=checkout_session_request.success_url, cancel_url=checkout_session_request.cancel_url, session_token=uuid4())
+    session = CheckoutSession(success_url=checkout_session_request.success_url, cancel_url=checkout_session_request.cancel_url, session_token=uuid4(), user_type=checkout_session_request.user_type)
 
     if quote_id := checkout_session_request.quote_id:
         quote = NewBusinessCheckoutItem(external_id=quote_id)
