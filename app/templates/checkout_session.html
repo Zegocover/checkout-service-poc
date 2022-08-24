@@ -21,14 +21,20 @@
     }
 
     .item-description {
+        padding-top: 5px;
         width: 400px;
         display: inline-block;
     }
 
     .item-amount {
+        padding-top: 5px;
         width: 100px;
         display: inline-block;
         text-align: right;
+    }
+
+    .total {
+        font-weight: bold;
     }
 
     .pay {
@@ -46,12 +52,9 @@
         let discount_code = $('.discount-code').val()
         let session_token = $('.session-token').text()
 
-        console.log(discount_code)
-        console.log(session_token)
-
         $.post(`http://127.0.0.1:8000/redeem-discount/${session_token}/?code=${discount_code}`)
 
-        window.location.reload()
+        delay(1000).then(() => window.location.reload());
     }
 </script>
 
@@ -72,8 +75,8 @@
     {% endfor %}
 
     <div>
-        <div class="item-description">Total</div>
-        <div class="item-amount">£{{ session.total() }}</div>
+        <div class="item-description total">Total</div>
+        <div class="item-amount total">£{{ session.total() }}</div>
     </div>
 
     <div class="pay">
