@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from decimal import Decimal
 
 from services.session_models import CheckoutSession
 
@@ -18,7 +19,10 @@ class StripePaymentOption:
         Used when the description needs to be dynamic, e.g. explaining monthly payments for a credit agreement
         Will use description attribute if this method is not implemented in a class
         """
-        return "Stripe Payment Description"
+        return "Make a single payment with your card"
+
+    def get_total(self, checkout_session) -> Decimal:
+        return checkout_session.total()
 
     def payment_session_setup(self, checkout_session) -> str:
         """
@@ -50,7 +54,10 @@ class PCLPaymentOption:
         Used when the description needs to be dynamic, e.g. explaining monthly payments for a credit agreement
         Will use description attribute if this method is not implemented in a class
         """
-        return "PCL Payment Description"
+        return "Pay in 12 installments (10% AER)"
+
+    def get_total(self, checkout_session) -> Decimal:
+        return checkout_session.total() * Decimal("1.10")
 
     def payment_session_setup(self, checkout_session) -> str:
         """
@@ -87,7 +94,7 @@ async def get_payment_options(checkout_session: CheckoutSession):
             "redirect_url": option.payment_session_redirect_url(checkout_session),
             "success_url": checkout_session.success_url,
             "cancel_url": checkout_session.cancel_url,
-            "amount": checkout_session.total(),
+            "amount": option.get_total(checkout_session),
         }
 
         return_list.append(option_dict)
