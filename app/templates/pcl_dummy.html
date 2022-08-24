@@ -1,0 +1,59 @@
+<html>
+
+<style>
+    body {
+        font-family: "sans-serif";
+        padding-left: 10px;
+    }
+
+    .left-block {
+        display: inline-block;
+    }
+
+    .item-description {
+        width: 400px;
+        display: inline-block;
+    }
+
+    .item-amount {
+        width: 100px;
+        display: inline-block;
+        text-align: right;
+    }
+
+    .redirect {
+        padding-top: 20px;
+        text-align: right;
+        width: 500px;
+    }
+</style>
+
+<head>
+    <title>PCL dummy page</title>
+</head>
+<body>
+<h1>PCL Dummy</h1>
+
+<div class="left-block">
+    {% for item in session.checkout_items %}
+        <div>
+            <div class="item-description">{{ item.description }}</div>
+            <div class="item-amount"> £{{ item.amount }}</div>
+        </div>
+    {% endfor %}
+
+    <div>
+        <div class="item-description">Total</div>
+        <div class="item-amount">£{{ session.total() }}</div>
+    </div>
+
+    <div class="redirect">
+        <input type="button" onclick="location.href='{{ session.success_url }}';"
+               value="Success"/>
+        <input type="button" onclick="location.href='{{ session.cancel_url }}';"
+               value="Cancel"/>
+    </div>
+</div>
+
+</body>
+</html>

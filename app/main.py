@@ -71,3 +71,9 @@ async def redeem_discount(checkout_session_id: UUID, code):
     await apply_discount(checkout_session_id, code)
 
     return {}
+
+
+@app.get('/pcl-dummy/{session_token}')
+async def pcl_dummy(request: Request, session_token: UUID):
+    session = await load_checkout_session(session_token)
+    return templates.TemplateResponse("pcl_dummy.html", {"request": request, "session": session})

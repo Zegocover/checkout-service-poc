@@ -63,7 +63,7 @@ class PCLPaymentOption:
         """
         Builds the url that the user will be redirect to in order to make a payment
         """
-        return "https://www.premiumcredit.com/"
+        return f"http://127.0.0.1:8000/pcl-dummy/{checkout_session.session_token}"
 
 
 async def get_payment_options(checkout_session: CheckoutSession):
