@@ -48,12 +48,9 @@ class StripeRefundOption:
         """
         Works out whether payment option is available for that particular checkout session
         """
-        print(checkout_session.total)
         items = checkout_session.checkout_items
-        if checkout_session.total() < 0:
+        if checkout_session.total() < 0 and not [i for i in items if i.type == "Quote"]:
             return True
-        elif [i for i in items if i.type == "Quote"]:
-            return False
         else:
             return False
 
