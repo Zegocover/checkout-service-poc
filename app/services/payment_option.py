@@ -12,7 +12,11 @@ class StripePaymentOption:
         """
         Works out whether payment option is available for that particular checkout session
         """
-        return True
+        items = checkout_session.checkout_items
+        if [i for i in items if i.type == "MTA"]:
+            return False
+        else:
+            return True
 
     def get_description(self, checkout_session) -> str:
         """
@@ -78,6 +82,48 @@ class PCLPaymentOption:
 
         return redirect_url
 
+@dataclass
+class PCLUpdatePaymentOption:
+    name: str = "PCL Update"
+
+    async def is_available(self, checkout_session) -> bool:
+        items = checkout_session.checkout_items
+        if [i for i in items if i.type == "MTA"]:
+            return True
+        else:
+            return False
+
+    def get_description(self, checkout_session) -> str:
+        """
+        Used when the description needs to be dynamic, e.g. explaining monthly payments for a credit agreement
+        Will use description attribute if this method is not implemented in a class
+        """
+        return "Update PCL agreement currently in place (10% AER)"
+
+    def get_total(self, checkout_session) -> Decimal:
+        return checkout_session.total() * Decimal("1.10")
+
+    def payment_session_setup(self, checkout_session) -> str:
+        """
+        Does any setup required before redirecting to the payment provider
+        Should take into account whether the checkout session is being used by the customer or a CS agent
+        """
+        pass
+
+    def payment_session_redirect_url(self, checkout_session) -> str:
+        """
+        Builds the url that the user will be redirect to in order to make a payment
+        """
+        redirect_url = f"http://127.0.0.1:8000/docs/"
+        if checkout_session.user_type == "Customer":
+            redirect_url = f"http://127.0.0.1:8000/pcl-dummy/{checkout_session.session_token}"
+        elif checkout_session.user_type == "Staff":
+            redirect_url = f"http://127.0.0.1:8000/pcl-staff-dummy/{checkout_session.session_token}"
+
+        return redirect_url
+
+
+
 
 async def get_payment_options(checkout_session: CheckoutSession):
     return_list = []
@@ -85,6 +131,7 @@ async def get_payment_options(checkout_session: CheckoutSession):
     all_options = [
         StripePaymentOption(),
         PCLPaymentOption(),
+        PCLUpdatePaymentOption(),
     ]
 
     available_payment_options = [
