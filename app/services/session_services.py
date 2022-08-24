@@ -50,6 +50,7 @@ async def load_checkout_session(session_token: str) -> CheckoutSession:
         session_token=session_db.session_token,
         success_url=session_db.success_url,
         cancel_url=session_db.cancel_url,
+        user_type=session_db.user_type,
         checkout_items=checkout_items,
     )
 
