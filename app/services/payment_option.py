@@ -12,6 +12,9 @@ class StripePaymentOption:
         """
         Works out whether payment option is available for that particular checkout session
         """
+        if checkout_session.total() < 0:
+            return False
+
         items = checkout_session.checkout_items
         if [i for i in items if i.type == "MTA"]:
             return False
@@ -41,12 +44,55 @@ class StripePaymentOption:
         """
         return "http://127.0.0.1:8000/stripe-payment/" + str(checkout_session.session_token)
 
+@dataclass
+class StripeRefundOption:
+    name: str = "Stripe Refund"
+
+    async def is_available(self, checkout_session) -> bool:
+        """
+        Works out whether payment option is available for that particular checkout session
+        """
+        print(checkout_session.total)
+        items = checkout_session.checkout_items
+        if checkout_session.total() < 0:
+            return True
+        elif [i for i in items if i.type == "Quote"]:
+            return False
+        else:
+            return False
+
+    def get_description(self, checkout_session) -> str:
+        """
+        Used when the description needs to be dynamic, e.g. explaining monthly payments for a credit agreement
+        Will use description attribute if this method is not implemented in a class
+        """
+        return "Make a stripe refund against your card"
+
+    def get_total(self, checkout_session) -> Decimal:
+        return checkout_session.total()
+
+    def payment_session_setup(self, checkout_session) -> str:
+        """
+        Does any setup required before redirecting to the payment provider
+        Should take into account whether the checkout session is being used by the customer or a CS agent
+        """
+        pass
+
+    def payment_session_redirect_url(self, checkout_session) -> str:
+        """
+        Builds the url that the user will be redirect to in order to make a payment
+        """
+        return "http://127.0.0.1:8000/stripe-payment/" + str(checkout_session.session_token)
+
 
 @dataclass
 class PCLPaymentOption:
     name: str = "PCL"
 
     async def is_available(self, checkout_session) -> bool:
+        if checkout_session.total() < 0:
+            return False
+
         items = checkout_session.checkout_items
         if [i for i in items if i.type == "Quote"]:
             return True
@@ -87,6 +133,9 @@ class PCLUpdatePaymentOption:
     name: str = "PCL Update"
 
     async def is_available(self, checkout_session) -> bool:
+        if checkout_session.total() < 0:
+            return False
+
         items = checkout_session.checkout_items
         if [i for i in items if i.type == "MTA"]:
             return True
@@ -132,6 +181,7 @@ async def get_payment_options(checkout_session: CheckoutSession):
         StripePaymentOption(),
         PCLPaymentOption(),
         PCLUpdatePaymentOption(),
+        StripeRefundOption(),
     ]
 
     available_payment_options = [
