@@ -44,7 +44,7 @@
 
     <div>
         <div class="item-description">Total</div>
-        <div class="item-amount">£{{ session.total() }}</div>
+        <div class="item-amount">{{ "£%.2f"|format(checkout_total) }}</div>
     </div>
 
     <div class="redirect">

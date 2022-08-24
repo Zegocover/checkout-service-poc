@@ -1,3 +1,4 @@
+from decimal import Decimal
 from typing import List
 
 from fastapi import FastAPI, Request
@@ -76,4 +77,5 @@ async def redeem_discount(checkout_session_id: UUID, code):
 @app.get('/pcl-dummy/{session_token}')
 async def pcl_dummy(request: Request, session_token: UUID):
     session = await load_checkout_session(session_token)
-    return templates.TemplateResponse("pcl_dummy.html", {"request": request, "session": session})
+    checkout_total = session.total() * Decimal("1.10")
+    return templates.TemplateResponse("pcl_dummy.html", {"request": request, "session": session, "checkout_total": checkout_total})
