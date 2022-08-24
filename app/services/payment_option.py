@@ -15,11 +15,7 @@ class StripePaymentOption:
         if checkout_session.total() < 0:
             return False
 
-        items = checkout_session.checkout_items
-        if [i for i in items if i.type == "MTA"]:
-            return False
-        else:
-            return True
+        return True
 
     def get_description(self, checkout_session) -> str:
         """
