@@ -1,5 +1,43 @@
 <html>
 
+<style>
+    body {
+        font-family: "sans-serif";
+        padding-left: 10px;
+    }
+
+    .session-token {
+        display: none;
+    }
+
+    .left-block {
+        display: inline-block;
+    }
+
+    .right-block {
+        display: inline-block;
+        vertical-align: top;
+        padding-left: 200px;
+    }
+
+    .item-description {
+        width: 400px;
+        display: inline-block;
+    }
+
+    .item-amount {
+        width: 100px;
+        display: inline-block;
+        text-align: right;
+    }
+
+    .pay {
+        padding-top: 100px;
+        text-align: right;
+        width: 500px;
+    }
+</style>
+
 <head>
     <title>Zego Payment Options</title>
 </head>
@@ -9,8 +47,8 @@
 
 {% for p in options_list %}
 <div>
-    <input type="radio" id="payment_option" name="payment_option" value="{{p.redirect_url}}">
-    <label for="payment_option"> Payment Method: {{p.payment_method}} Amount: {{p.amount}} Description:
+    <input type="radio" id="{{ p.payment_method }}" name="payment_option" value="{{p.redirect_url}}">
+    <label for="{{ p.payment_method }}"> Payment Method: {{p.payment_method}} Amount: {{p.amount}} Description:
         {{p.description}} </label><br>
 </div>
 {% endfor %}
