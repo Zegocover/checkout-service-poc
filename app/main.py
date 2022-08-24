@@ -79,3 +79,9 @@ async def pcl_dummy(request: Request, session_token: UUID):
     session = await load_checkout_session(session_token)
     checkout_total = session.total() * Decimal("1.10")
     return templates.TemplateResponse("pcl_dummy.html", {"request": request, "session": session, "checkout_total": checkout_total})
+
+@app.get('/pcl-staff-dummy/{session_token}')
+async def pcl_dummy(request: Request, session_token: UUID):
+    session = await load_checkout_session(session_token)
+    checkout_total = session.total() * Decimal("1.10")
+    return templates.TemplateResponse("pcl_staff_dummy.html", {"request": request, "session": session, "checkout_total": checkout_total})

@@ -70,7 +70,13 @@ class PCLPaymentOption:
         """
         Builds the url that the user will be redirect to in order to make a payment
         """
-        return f"http://127.0.0.1:8000/pcl-dummy/{checkout_session.session_token}"
+        redirect_url = f"http://127.0.0.1:8000/docs/"
+        if checkout_session.user_type == "Customer":
+            redirect_url = f"http://127.0.0.1:8000/pcl-dummy/{checkout_session.session_token}"
+        elif checkout_session.user_type == "Staff":
+            redirect_url = f"http://127.0.0.1:8000/pcl-staff-dummy/{checkout_session.session_token}"
+
+        return redirect_url
 
 
 async def get_payment_options(checkout_session: CheckoutSession):

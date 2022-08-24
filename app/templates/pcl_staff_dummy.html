@@ -26,13 +26,17 @@
         text-align: right;
         width: 500px;
     }
+
+    .staff-header {
+      color: brown;
+    }
 </style>
 
 <head>
-    <title>PCL dummy page</title>
+    <title>PCL staff dummy page</title>
 </head>
 <body>
-<h1>PCL Customer Dummy</h1>
+<h1 class="staff-header">PCL Staff Dummy</h1>
 
 <div class="left-block">
     {% for item in session.checkout_items %}
